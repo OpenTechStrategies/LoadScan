@@ -16,3 +16,23 @@ scenarios:
     - url: ${APP_URL}/app/login
       method: GET
       label: login-page
+    - url: ${APP_URL}/api/auth/login
+      headers:
+        content-type: application/json
+      method: POST
+      label: login-api
+      body: ${LOGINPOST}
+      assert-jsonpath:
+          - jsonpath: "$.isSuccessful"
+            expected-value: "true"
+            validate: true
+    - url: ${APP_URL}/api/folder/getroot
+      headers:
+        content-type: application/json
+      method: POST
+      label: getroot
+      body: ${GETROOT}
+      assert-jsonpath:
+          - jsonpath: "$.isSuccessful"
+            expected-value: "true"
+            validate: true
