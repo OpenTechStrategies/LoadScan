@@ -8,10 +8,10 @@ execution:
 - concurrency: 2
   ramp-up: 1m
   hold-for: 1m
-  scenario: login
+  scenario: fileupload
 
 scenarios:
-  login:
+  fileupload:
     requests:
     - url: ${APP_URL}/app/login
       method: GET
@@ -21,17 +21,57 @@ scenarios:
         content-type: application/json
       method: POST
       label: login-api
-      body: ${LOGINPOST}
+      body: '{"RequestVO":{"data":[{"AccountVO":{"primaryEmail":"${EMAIL}","rememberMe":false},"AccountPasswordVO":{"password":"${PASSWORD}"}}],"apiKey":"${API_KEY}","csrf":""},"timeout":{}}'
       assert-jsonpath:
           - jsonpath: "$.isSuccessful"
             expected-value: "true"
             validate: true
+      extract-jsonpath:
+        csrf:
+          jsonpath: $.csrf
+        archiveNbr:
     - url: ${APP_URL}/api/folder/getroot
       headers:
         content-type: application/json
       method: POST
       label: getroot
-      body: ${GETROOT}
+      body: '{"RequestVO":{"data":[{}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+      assert-jsonpath:
+          - jsonpath: "$.isSuccessful"
+            expected-value: "true"
+            validate: true
+      extract-jsonpath:
+        folderId:
+          jsonpath: $.Results[0].data[0].FolderVO.ChildItemVOs[0].parentFolderId
+        linkId:
+          jsonpath: $.Results[0].data[0].FolderVO.ChildItemVOs[0].FolderLinkVOs[0].parentFolder_linkId
+    - url: ${APP_URL}/api/record/postmetabatch
+      headers:
+        content-type: application/json
+      method: POST
+      label: postmetabatch
+      body: '{"RequestVO":{"data":[{"RecordVO":{"parentFolderId":${folderId},"parentFolder_linkId":${linkId},"displayName":"${FILENAME}","description":"","displayDT":"","displayEndDT":"","uploadFileName":"${FILENAME}","thumbnail":"","LocnVO":{"locnId":null,"latitude":null,"longitude":null,"place":null,"placeVerified":null,"status":null,"type":null,"createdDT":null,"updatedDT":null},"derivedTimezoneId":null}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":300000}'
+      extract-jsonpath:
+        recordId:
+          jsonpath: $.Results[0].data[0].RecordV0.recordId
+      assert-jsonpath:
+          - jsonpath: "$.isSuccessful"
+            expected-value: "true"
+            validate: true
+    - url: ${APP_URL}:9000/
+      method: POST
+      label: fileupload
+      body:
+        recordId: ${recordId}
+      upload-files:
+      - param: thefile
+        path: data/plaintext.txt
+    - url: ${APP_URL}/api/archive/getAllArchives
+      headers:
+        content-type: application/json
+      method: POST
+      label: getAllArchives
+      body: {"RequestVO":{"data":[{"AccountVO":{}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}
       assert-jsonpath:
           - jsonpath: "$.isSuccessful"
             expected-value: "true"
