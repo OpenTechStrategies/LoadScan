@@ -12,6 +12,7 @@ execution:
 
 scenarios:
   fileupload:
+    keepalive: false
     requests:
     - url: ${APP_URL}/app/login
       method: GET
@@ -79,7 +80,7 @@ scenarios:
       - param: thefile
         path: data/plaintext.txt
       body:
-        recordId: ${recordId}
+        recordid: ${recordId}
     - url: ${APP_URL}/api/record/getLean
       headers:
         content-type: application/json
