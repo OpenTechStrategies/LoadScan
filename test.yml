@@ -8,11 +8,10 @@ execution:
 - concurrency: 1
   ramp-up: 1m
   hold-for: 1m
-  scenario: fileupload
+  scenario: single-user-file-upload
 
 scenarios:
-  fileupload:
-    keepalive: false
+  login:
     requests:
     - url: ${APP_URL}/app/login
       method: GET
@@ -43,6 +42,8 @@ scenarios:
           - jsonpath: "$.Results[0].data[0].SimpleVO.value"
             expected-value: "true"
             validate: true
+  getroot:
+    requests:
     - url: ${APP_URL}/api/folder/getroot
       headers:
         content-type: application/json
@@ -58,6 +59,9 @@ scenarios:
           jsonpath: $.Results[0].data[0].FolderVO.ChildItemVOs[1].folderId
         linkId:
           jsonpath: $.Results[0].data[0].FolderVO.ChildItemVOs[1].FolderLinkVOs[0].folder_linkId
+  file-upload:
+    keepalive: false
+    requests:
     - url: ${APP_URL}/api/record/postmetabatch
       headers:
         content-type: application/json
@@ -81,6 +85,8 @@ scenarios:
         path: data/plaintext.txt
       body:
         recordid: ${recordId}
+  confirm-upload:
+    requests:
     - url: ${APP_URL}/api/record/getLean
       headers:
         content-type: application/json
@@ -88,6 +94,20 @@ scenarios:
       label: getLean
       body: '{"RequestVO":{"data":[{"RecordVO":{"archiveNbr":"${archiveNbr}"}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
       assert-jsonpath:
-          - jsonpath: "$.isSuccessful"
-            expected-value: "true"
-            validate: true
+        - jsonpath: "$.isSuccessful"
+          expected-value: "true"
+          validate: true
+        - jsonpath: "$.Results[0].data[0].RecordVO.recordId"
+          expected-value: "${recordId}"
+          validate: true
+        - jsonpath: "$.Results[0].data[0].RecordVO.size"
+          expected-value: "0"
+          validate: true
+          invert: true
+  single-user-file-upload:
+    requests:
+    - once:
+      - include-scenario: login
+      - include-scenario: getroot
+    - include-scenario: file-upload
+    - include-scenario: confirm-upload
