@@ -42,6 +42,7 @@ scenarios:
           - jsonpath: "$.Results[0].data[0].SimpleVO.value"
             expected-value: "true"
             validate: true
+
   getroot:
     requests:
     - url: ${APP_URL}/api/folder/getroot
@@ -59,6 +60,7 @@ scenarios:
           jsonpath: $.Results[0].data[0].FolderVO.ChildItemVOs[1].folderId
         linkId:
           jsonpath: $.Results[0].data[0].FolderVO.ChildItemVOs[1].FolderLinkVOs[0].folder_linkId
+
   file-upload:
     keepalive: false
     requests:
@@ -85,25 +87,30 @@ scenarios:
         path: data/plaintext.txt
       body:
         recordid: ${recordId}
+
   confirm-upload:
     requests:
-    - url: ${APP_URL}/api/record/getLean
-      headers:
-        content-type: application/json
-      method: POST
-      label: getLean
-      body: '{"RequestVO":{"data":[{"RecordVO":{"archiveNbr":"${archiveNbr}"}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
-      assert-jsonpath:
-        - jsonpath: "$.isSuccessful"
-          expected-value: "true"
-          validate: true
-        - jsonpath: "$.Results[0].data[0].RecordVO.recordId"
-          expected-value: "${recordId}"
-          validate: true
-        - jsonpath: "$.Results[0].data[0].RecordVO.size"
-          expected-value: "0"
-          validate: true
-          invert: true
+    - while: '${__groovy(vars.get("uploadStatus") != "status.generic.ok" )}'
+      do:
+      - url: ${APP_URL}/api/record/getLean
+        headers:
+          content-type: application/json
+        method: POST
+        label: getLean
+        body: '{"RequestVO":{"data":[{"RecordVO":{"archiveNbr":"${archiveNbr}"}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+        assert-jsonpath:
+          - jsonpath: "$.isSuccessful"
+            expected-value: "true"
+            validate: true
+          - jsonpath: "$.Results[0].data[0].RecordVO.recordId"
+            expected-value: "${recordId}"
+            validate: true
+        extract-jsonpath:
+          uploadStatus:
+            jsonpath: "$.Results[0].data[0].RecordVO.status"
+    - set-variables:
+       uploadStatus: null
+
   single-user-file-upload:
     requests:
     - once:
