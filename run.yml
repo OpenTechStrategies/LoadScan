@@ -12,6 +12,12 @@ included-configs:
 settings:
   artifacts-dir: artifacts/%Y-%m-%d_%H-%M-%S.%f
 
+services:
+- module: shellexec
+  prepare:
+  - echo "filename" > files.csv
+  - ls ${TEST_DATA_DIR} >> files.csv
+
 execution:
   # For scenarios that require login, set this number to the number of user accounts specified in accounts.csv
 - concurrency: 2
