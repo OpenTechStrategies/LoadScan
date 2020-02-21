@@ -1,0 +1,20 @@
+# Uploads results to blazemeter.
+# This is optional, and can be commented out for only local reporting (default).
+reporting:
+- module: blazemeter
+  report-name: File Uploads
+  test: File Upload Poll
+  project: Load Testing
+
+included-configs:
+- scenarios.yml
+
+settings:
+  artifacts-dir: artifacts/%Y-%m-%d_%H-%M-%S.%f
+
+execution:
+  # For scenarios that require login, set this number to the number of user accounts specified in accounts.csv
+- concurrency: 2
+  ramp-up: 30s
+  hold-for: 5m
+  scenario: login-fileupload-poll

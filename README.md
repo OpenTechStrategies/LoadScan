@@ -13,11 +13,32 @@ The last command will install [JMeter](https://jmeter.apache.org/) and all other
 
 ## Run
 
-1. Modify `secrets.example.yml` with the needed configuration information
-2. Rename `secrets.example.yml` to `secrets.yml`
-3. Point Taurus to `test.yml` to run
+1. `cp secrets.example.yml secrets.yml`
+1. Edit `secrets.yml` to contain the needed configuration information
+1. `cp accounts.example.csv accounts.csv`
+1. Edit `accounts.csv` to contain valid login credentials for the application.
+1. Point Taurus to `run.yml`
 
     ```
-    bzt test.yml
+    bzt run.yml
     ```
-The script produces artifacts in the `artifacts/` directory, and `jmeter.log` output.
+The script writes artifacts to the `artifacts/` directory, and a `jmeter.log` in the root directory. To debug the running of a particuar scenario, open the JMeter gui when running the test.
+
+    ```
+    bzt -gui run.yml
+    ```
+
+## Project Structure
+
+This project uses the following files and directories during execution:
+- `actions.yml`: discrete API calls and blocks of functionality (e.g. login, upload a file).
+- `scenarios.yml`: user stories, constructed from actions (e.g. A user logs in, uploads a file, and waits for the file to become viewable).
+- `run.yml`: The top-level run file, which specifies the run duration, concurrency, user story/load test scenario to run, and reporting options.
+- `secrets.yml`: Sensitive required fields e.g. API keys
+- `accounts.csv': The login credentials for different user accounts.
+- `files.csv': The names of files to upload.
+- `data/`: The directory where test data files are stored. 
+
+## Provided Test Data
+
+The provided test files are all taken from the public domain. Sources: https://archive.org, https://pypi.org, and the author of this project (@xmunoz).

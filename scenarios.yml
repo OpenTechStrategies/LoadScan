@@ -1,0 +1,17 @@
+included-configs:
+- actions.yml
+
+scenarios:
+  login-fileupload:
+    requests:
+    - once:
+      - include-scenario: login
+      - include-scenario: getroot
+    - include-scenario: file-upload
+  login-fileupload-poll:
+    requests:
+    - once:
+      - include-scenario: login
+      - include-scenario: getroot
+    - include-scenario: file-upload
+    - include-scenario: confirm-upload
