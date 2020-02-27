@@ -95,27 +95,32 @@ scenarios:
     # - status.record.converting
     # - status.generic.ok
     requests:
-    - while: '${__groovy(vars.get("uploadStatus") != "status.generic.ok" )}'
+    # https://jmeter.apache.org/usermanual/component_reference.html#Transaction_Controller
+    - transaction: Record processing
+      force-parent-sample: true # we don't need the reporting granuality of each request
+      include-timers: true # include pause interval in response time
       do:
-      - url: ${APP_URL}/api/record/getLean
-        headers:
-          content-type: application/json
-        method: POST
-        label: getLean
-        body: '{"RequestVO":{"data":[{"RecordVO":{"archiveNbr":"${archiveNbr}"}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
-        assert-jsonpath:
-          - jsonpath: "$.isSuccessful"
-            expected-value: "true"
-            validate: true
-          - jsonpath: "$.Results[0].data[0].RecordVO.recordId"
-            expected-value: "${recordId}"
-            validate: true
-        extract-jsonpath:
-          uploadStatus:
-            jsonpath: "$.Results[0].data[0].RecordVO.status"
-      - action: pause
-        target: current-thread
-        pause-duration: 1s
+      - while: '${__groovy(vars.get("uploadStatus") != "status.generic.ok" )}'
+        do:
+        - url: ${APP_URL}/api/record/getLean
+          headers:
+            content-type: application/json
+          method: POST
+          label: getLean
+          body: '{"RequestVO":{"data":[{"RecordVO":{"archiveNbr":"${archiveNbr}"}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+          assert-jsonpath:
+            - jsonpath: "$.isSuccessful"
+              expected-value: "true"
+              validate: true
+            - jsonpath: "$.Results[0].data[0].RecordVO.recordId"
+              expected-value: "${recordId}"
+              validate: true
+          extract-jsonpath:
+            uploadStatus:
+              jsonpath: "$.Results[0].data[0].RecordVO.status"
+        - action: pause
+          target: current-thread
+          pause-duration: 1s
     # Reset uploadStatus for subsequent samplers.
     - set-variables:
        uploadStatus: null

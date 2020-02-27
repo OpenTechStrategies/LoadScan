@@ -2,8 +2,8 @@
 # This is optional, and can be commented out for only local reporting (default).
 reporting:
 - module: blazemeter
-  report-name: File Uploads
-  test: File Upload Poll
+  report-name: File Uploads with polling - 100 kb
+  test: File uploads - poll
   project: Load Testing
 
 included-configs:
