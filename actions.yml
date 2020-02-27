@@ -66,7 +66,7 @@ scenarios:
       headers:
         content-type: application/json
       method: POST
-      label: postmetabatch
+      label: postmetabatch-request
       body: '{"RequestVO":{"data":[{"RecordVO":{"parentFolderId":${folderId},"parentFolder_linkId":${linkId},"displayName":"${filename}","description":"","displayDT":"","displayEndDT":"","uploadFileName":"${filename}","thumbnail":"","LocnVO":{"locnId":null,"latitude":null,"longitude":null,"place":null,"placeVerified":null,"status":null,"type":null,"createdDT":null,"updatedDT":null},"derivedTimezoneId":null}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":300000}'
       extract-jsonpath:
         recordId:
@@ -79,7 +79,7 @@ scenarios:
             validate: true
     - url: ${APP_URL}:9000/
       method: POST
-      label: fileupload
+      label: fileupload-request
       upload-files:
       - param: thefile
         # Ignore the warning that Taurus outputs about variables here. This does get explanded.

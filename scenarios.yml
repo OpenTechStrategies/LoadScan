@@ -7,11 +7,19 @@ scenarios:
     - once:
       - include-scenario: login
       - include-scenario: getroot
-    - include-scenario: file-upload
+    - transaction: File upload
+      force-parent-sample: false
+      include-timers: true
+      do:
+      - include-scenario: file-upload
   login-fileupload-poll:
     requests:
     - once:
       - include-scenario: login
       - include-scenario: getroot
-    - include-scenario: file-upload
-    - include-scenario: confirm-upload
+    - transaction: Complete File upload
+      force-parent-sample: false
+      include-timers: true
+      do:
+      - include-scenario: file-upload
+      - include-scenario: confirm-upload
