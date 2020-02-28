@@ -94,6 +94,8 @@ scenarios:
           jsonpath: $.Results[0].data[0].FolderVO.ChildItemVOs[1].folderId
         linkId:
           jsonpath: $.Results[0].data[0].FolderVO.ChildItemVOs[1].FolderLinkVOs[0].folder_linkId
+        csrf:
+          jsonpath: $.csrf
 
   file-upload:
     # Perform the file upload requests.

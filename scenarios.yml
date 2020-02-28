@@ -19,7 +19,8 @@ scenarios:
     requests:
     - once:
       - include-scenario: get-cookies
-      - include-scenario: login-preexisting
+      - include-scenario: create-account
+      - include-scenario: login
       - include-scenario: getroot
     - transaction: Complete File upload
       force-parent-sample: false
