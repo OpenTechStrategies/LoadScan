@@ -5,17 +5,20 @@ scenarios:
   login-fileupload:
     requests:
     - once:
-      - include-scenario: login
+      - include-scenario: get-cookies
+      - include-scenario: login-preexisting
       - include-scenario: getroot
     - transaction: File upload
       force-parent-sample: false
       include-timers: true
       do:
       - include-scenario: file-upload
+
   login-fileupload-poll:
     requests:
     - once:
-      - include-scenario: login
+      - include-scenario: get-cookies
+      - include-scenario: login-preexisting
       - include-scenario: getroot
     - transaction: Complete File upload
       force-parent-sample: false
@@ -23,3 +26,9 @@ scenarios:
       do:
       - include-scenario: file-upload
       - include-scenario: confirm-upload
+
+   create-account-login:
+     requests:
+      - include-scenario: get-cookies
+      - include-scenario: create-account
+      - include-scenario: login

@@ -2,14 +2,60 @@ included-configs:
 - secrets.yml
 
 scenarios:
-  login:
-    # Login with an existing user account.
-    data-sources:
-    - accounts.csv
+  get-cookies:
+    # Get "testing" cookie and csrf for subsequent requests. This scenario should always be first in any execution plan.
+    - url: ${APP_URL}/api/auth/loggedIn
+      headers:
+        content-type: application/json
+      method: POST
+      label: loggedin
+      body: '{"RequestVO":{"data":[{}],"apiKey":"${API_KEY}","csrf":""},"timeout":{}}'
+      assert-jsonpath:
+          - jsonpath: "$.isSuccessful"
+            expected-value: "true"
+            validate: true
+          - jsonpath: "$.Results[0].data[0].SimpleVO.value"
+            expected-value: "false"
+            validate: true
+      extract-jsonpath:
+        csrf:
+          jsonpath: $.csrf
+
+  create-account:
+    # Create a perfbot user account.
     requests:
-    - url: ${APP_URL}/app/login
-      method: GET
-      label: login-page
+    - set-variables:
+       email: perfbot+taurus${__RandomString(8,1234567890)}@opentechstrategies.com
+       password: ${__RandomString(12, abcdegfhijklmnopqrstuvwxyz1234567890)}
+    - url: ${APP_URL}/api/account/post
+      headers:
+        content-type: application/json
+      method: POST
+      label: create-user-account
+      body: '{"RequestVO":{"data":[{"AccountVO":{"primaryEmail":"${email}","fullName":"user5","agreed":true,"optIn":false},"AccountPasswordVO":{"password":"${password}","passwordVerify":"${password}"}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+      assert-jsonpath:
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
+        validate: true
+    - include-scenario: logout
+
+  logout:
+    # Logout of the application.
+    requests:
+    - url: ${APP_URL}/api/auth/logout
+      headers:
+        content-type: application/json
+      method: POST
+      label: logout
+      body: '{"RequestVO":{"data":[{}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+      assert-jsonpath:
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
+        validate: true
+
+  login:
+    # Login with ${email}:${password}. This variables are set by create-account or login-preexisting.
+    requests:
     - url: ${APP_URL}/api/auth/login
       headers:
         content-type: application/json
@@ -17,25 +63,17 @@ scenarios:
       label: login
       body: '{"RequestVO":{"data":[{"AccountVO":{"primaryEmail":"${email}","rememberMe":false},"AccountPasswordVO":{"password":"${password}"}}],"apiKey":"${API_KEY}","csrf":""},"timeout":{}}'
       assert-jsonpath:
-          - jsonpath: "$.isSuccessful"
-            expected-value: "true"
-            validate: true
-      extract-jsonpath:
-        csrf:
-          jsonpath: $.csrf
-    - url: ${APP_URL}/api/auth/loggedIn
-      headers:
-        content-type: application/json
-      method: POST
-      label: loggedin
-      body: '{"RequestVO":{"data":[{}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
-      assert-jsonpath:
-          - jsonpath: "$.isSuccessful"
-            expected-value: "true"
-            validate: true
-          - jsonpath: "$.Results[0].data[0].SimpleVO.value"
-            expected-value: "true"
-            validate: true
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
+        validate: true
+
+  login-preexisting:
+    # Login with a pre-existing user account.
+    data-sources:
+    - path: accounts.csv
+      variable-names: email,password
+    requests:
+      - include-scenario: login
 
   getroot:
     # Get the directory info for the "My Files" folder.
@@ -47,9 +85,9 @@ scenarios:
       label: getroot
       body: '{"RequestVO":{"data":[{}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
       assert-jsonpath:
-          - jsonpath: "$.isSuccessful"
-            expected-value: "true"
-            validate: true
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
+        validate: true
       extract-jsonpath:
         folderId:
           jsonpath: $.Results[0].data[0].FolderVO.ChildItemVOs[1].folderId
@@ -74,9 +112,9 @@ scenarios:
         archiveNbr:
           jsonpath: $.Results[0].data[0].RecordVO.archiveNbr
       assert-jsonpath:
-          - jsonpath: "$.isSuccessful"
-            expected-value: "true"
-            validate: true
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
+        validate: true
     - url: ${APP_URL}:9000/
       method: POST
       label: fileupload-request
