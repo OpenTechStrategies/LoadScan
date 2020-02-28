@@ -1,5 +1,5 @@
 # LoadScan
-LoadScan is a [Taurus]((https://gettaurus.org/) script that generates load on different API endpoints, and measures the performance of these endpoints.
+LoadScan is a [Taurus](https://gettaurus.org/) script that generates load on different API endpoints, and measures the performance of these endpoints.
 
 ## Requirements
 Get started by installing [Taurus](https://gettaurus.org/) and its dependencies.
