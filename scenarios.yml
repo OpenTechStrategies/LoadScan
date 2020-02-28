@@ -2,6 +2,7 @@ included-configs:
 - actions.yml
 
 scenarios:
+
   login-fileupload:
     requests:
     - once:
@@ -27,8 +28,9 @@ scenarios:
       - include-scenario: file-upload
       - include-scenario: confirm-upload
 
-   create-account-login:
-     requests:
-      - include-scenario: get-cookies
-      - include-scenario: create-account
-      - include-scenario: login
+  create-account-login:
+    requests:
+    - include-scenario: get-cookies
+    - include-scenario: create-account
+    - include-scenario: login
+    - include-scenario: logout
