@@ -3,7 +3,7 @@ included-configs:
 
 scenarios:
 
-  login-fileupload:
+  login-preexisting-fileupload:
     requests:
     - once:
       - include-scenario: get-cookies
