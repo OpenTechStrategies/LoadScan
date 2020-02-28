@@ -42,7 +42,7 @@ This project uses the following files and directories during execution:
 
 Currently, the following workflows are available as scenarios for load testing.
 
-- `login-preexisting-fileupload`: Login with user credentials specified in `accounts.yml` and upload files repeatedly, without polling for record status. This scenario is a convenient way to upload a large number of files to a small list of specified user accounts quickly.
+- `login-preexisting-fileupload`: Login with user credentials specified in `accounts.csv` and upload files repeatedly, without polling for record status. This scenario is a convenient way to upload a large number of files to a small list of specified user accounts quickly.
 - `login-fileupload-poll`: Create a new user account, login with that account, upload a file, and poll the record until processing has completed, then upload more files.
 - `create-account-login`: Create an account, login, then logout. Repeat.
 
