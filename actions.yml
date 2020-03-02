@@ -79,7 +79,7 @@ scenarios:
     requests:
       - include-scenario: login
 
-  getroot:
+  get-root-dir:
     # Get the directory info for the "My Files" folder.
     requests:
     - url: ${APP_URL}/api/folder/getroot
