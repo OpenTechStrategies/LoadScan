@@ -15,13 +15,9 @@ scenarios:
       - jsonpath: "$.isSuccessful"
         expected-value: "true"
         validate: true
-      - jsonpath: "$.Results[0].data[0].SimpleVO.value"
-        expected-value: "false"
-        validate: true
       extract-jsonpath:
         csrf:
           jsonpath: $.csrf
-
   create-account:
     # Create a perfbot user account.
     requests:
@@ -38,7 +34,6 @@ scenarios:
       - jsonpath: "$.isSuccessful"
         expected-value: "true"
         validate: true
-    - include-scenario: logout
 
   logout:
     # Logout of the application.
@@ -116,16 +111,20 @@ scenarios:
         archiveNbr:
           jsonpath: $.Results[0].data[0].RecordVO.archiveNbr
       assert-jsonpath:
+      - jsonpath: "$.Results[0].message[0]"
+        expected-value: "New records created"
+        validate: true
       - jsonpath: "$.isSuccessful"
         expected-value: "true"
         validate: true
+
     - url: ${APP_URL}:9000/
       method: POST
       label: fileupload-request
       upload-files:
       - param: thefile
-        # Ignore the warning that Taurus outputs about variables here. This does get explanded.
-        path: ${TEST_DATA_DIR}/${filename}
+        # Ignore the warning that Taurus outputs about variables here. This does get expanded.
+        path: ${filename}
       body:
         recordid: ${recordId}
 
