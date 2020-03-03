@@ -13,6 +13,8 @@ The last command will install [JMeter](https://jmeter.apache.org/) and all other
 
 ## Run
 
+### Local Execution
+
 1. `cp secrets.example.yml secrets.yml`
 1. Edit `secrets.yml` to contain the needed configuration information
 1. `cp accounts.example.csv accounts.csv`
@@ -23,9 +25,45 @@ The last command will install [JMeter](https://jmeter.apache.org/) and all other
     ```
     bzt run.yml
     ```
-The script writes artifacts to the `artifacts/` directory, and a `jmeter.log` in the root directory. To debug the running of a particuar scenario, open the JMeter gui when running the test.
+The script writes artifacts and `jmeter.log` in the root directory. To debug the running of a particuar scenario, open the JMeter gui when running the test.
 
     bzt -gui run.yml
+
+## Blazemeter execution
+
+[Blazemeter](https://www.blazemeter.com/) makes a lot of assumptions about your test. Therefore, the easiest way to execute a Taurus script on Blazemeter is to put everyone in one file and upload that, along with needed csv and data files. A convenient way to do this is to kick of a local run (instructions above) and harvest `effective.yml` from the artifacts directory. Most of this file can be deleted, except the following keys: scenarios, settings, execution. Ensure that you have the desired concurrency configured before uploading to Blazemeter. Once your done cleaning it up, the file should look something like this (but with more scenarios).
+
+```
+---
+scenarios:
+  create-account:
+    requests:
+    - set-variables:
+        email: perfbot+taurus${__RandomString(8,1234567890)}@opentechstrategies.com
+        password: '********'
+    - assert-jsonpath:
+      - expected-value: 'true'
+        jsonpath: $.isSuccessful
+        validate: true
+      body: '{"RequestVO":{"data":[{"AccountVO":{"primaryEmail":"${email}","fullName":"${email}","agreed":true,"optIn":false},"AccountPasswordVO":{"password":"${password}","passwordVerify":"${password}"}}],"apiKey":"my-api-key","csrf":"my-csrf-token"},"timeout":{}}'
+      headers:
+        content-type: application/json
+      label: create-user-account
+      method: POST
+      url: https://example.opentechstratgies.com/api/account/post
+settings:
+  aggregator: consolidator
+  default-executor: jmeter
+  env:
+    API_KEY: my-api-key
+    APP_URL: https://example.opentechstrategies.com
+execution:
+- concurrency: 10
+  executor: jmeter
+  hold-for: 5m
+  ramp-up: 1m
+  scenario: create-account
+```
 
 ## Project Structure
 
