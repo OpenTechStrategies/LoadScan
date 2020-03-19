@@ -18,6 +18,7 @@ scenarios:
       extract-jsonpath:
         csrf:
           jsonpath: $.csrf
+
   create-account:
     # Create a perfbot user account.
     requests:
@@ -34,6 +35,48 @@ scenarios:
       - jsonpath: "$.isSuccessful"
         expected-value: "true"
         validate: true
+
+  create-folder:
+    # Create a folder in "My Files".
+    requests:
+    - url: ${APP_URL}/api/folder/post
+      headers:
+        content-type: application/json
+      method: POST
+      label: create-folder
+      body: '{"RequestVO":{"data":[{"FolderVO":{"displayName":"BlazemeterLoadTestFolder","parentFolderId":${folderId},"parentFolder_linkId":${linkId}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+      assert-jsonpath:
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
+        validate: true
+      - jsonpath: "$.Results[0].data[0].FolderVO.status"
+        expected-value: "status.generic.ok"
+        validate: true
+      extract-jsonpath:
+        newFolderId:
+          jsonpath: $.Results[0].data[0].FolderVO.folderId
+
+  create-tag:
+    # Create a tag
+    requests:
+    - url: ${APP_URL}/api/tag/post
+      headers:
+        content-type: application/json
+      method: POST
+      label: create-tag
+      body: '{"RequestVO":{"data":[{"TagVO":{"name":"MyBlazemeterTag"}, "TagLinkVO":{"refTable":"record","refId":68}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+      assert-jsonpath:
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
+        validate: true
+      - jsonpath: "$.Results[0].data[0].TagLinkVO.status"
+        expected-value: "status.generic.ok"
+        validate: true
+      extract-jsonpath:
+        tagId:
+          jsonpath: $.Results[0].data[0].TagLinkVO.tagId
+        tagLinkId:
+          jsonpath: $.Results[0].data[0].TagLinkVO.tag_linkId
 
   logout:
     # Logout of the application.
@@ -74,6 +117,20 @@ scenarios:
     requests:
       - include-scenario: login
 
+  get-record:
+    # Get record info.
+    requests:
+    - url: ${APP_URL}/api/record/get
+      headers:
+        content-type: application/json
+      method: POST
+      label: get-record
+      body: '{"RequestVO":{"data":[{"RecordVO":{"archiveNbr":"${acrhiveNbr}","folder_linkId":${linkId},"recordId":${recordId}}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+      assert-jsonpath:
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
+        validate: true
+
   get-root-dir:
     # Get the directory info for the "My Files" folder.
     requests:
@@ -93,6 +150,54 @@ scenarios:
         linkId:
           jsonpath: $.Results[0].data[0].FolderVO.ChildItemVOs[1].FolderLinkVOs[0].folder_linkId
 
+  get-tree:
+    # Get record info.
+    requests:
+    - url: ${APP_URL}/api/folder/tree
+      headers:
+        content-type: application/json
+      method: POST
+      label: get-tree
+      body: '{"RequestVO":{"data":[{"FolderVO":{"archiveNbr":"${acrhiveNbr}","folder_linkId":${linkId},"folderId":${folderId}}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+      assert-jsonpath:
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
+        validate: true
+
+  file-copy:
+    # Copy a file to a new folder.
+    requests:
+    - url: ${APP_URL}/api/record/copy
+      headers:
+        content-type: application/json
+      method: POST
+      label: file-copy
+      body: '{"RequestVO":{"data":[{"RecordVO":${record},FolderDestVO:${destFolder}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+      assert-jsonpath:
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
+        validate: true
+      - jsonpath: "$.Results[0].message[0]"
+        expected-value: "Record copied"
+        validate: true
+
+  file-move:
+    # Move a file to a new folder.
+    requests:
+    - url: ${APP_URL}/api/record/move
+      headers:
+        content-type: application/json
+      method: POST
+      label: file-move
+      body: '{"RequestVO":{"data":[{"RecordVO":${record},FolderDestVO:${destFolder}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+      assert-jsonpath:
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
+        validate: true
+      - jsonpath: "$.Results[0].message[0]"
+        expected-value: "Record moved to another folder"
+        validate: true
+
   file-upload:
     # Perform the file upload requests.
     keepalive: false
@@ -110,6 +215,8 @@ scenarios:
           jsonpath: $.Results[0].data[0].RecordVO.recordId
         archiveNbr:
           jsonpath: $.Results[0].data[0].RecordVO.archiveNbr
+        linkId:
+          jsonpath: $.Results[0].data[0].FolderLinkVOs[0].folder_linkId
       assert-jsonpath:
       - jsonpath: "$.Results[0].message[0]"
         expected-value: "New records created"
