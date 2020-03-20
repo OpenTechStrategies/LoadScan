@@ -10,7 +10,7 @@ scenarios:
         content-type: application/json
       method: POST
       label: loggedin
-      body: '{"RequestVO":{"data":[{}],"apiKey":"${API_KEY}","csrf":""},"timeout":{}}'
+      body: '{"RequestVO":{"data":[{}],"apiKey":"${API_KEY}","csrf":null},"timeout":{}}'
       assert-jsonpath:
       - jsonpath: "$.isSuccessful"
         expected-value: "true"
@@ -18,6 +18,20 @@ scenarios:
       extract-jsonpath:
         csrf:
           jsonpath: $.csrf
+
+  get-account:
+    # Get csrf for subsequent requests.
+    requests:
+    - url: ${APP_URL}/api/account/get
+      headers:
+        content-type: application/json
+      method: POST
+      label: get-account
+      body: '{"RequestVO":{"data":[{"AccountVO":{}}],"apiKey":"${API_KEY}","csrf":null},"timeout":{}}'
+      assert-jsonpath:
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
+        validate: true
 
   create-account:
     # Create a perfbot user account.
@@ -105,9 +119,6 @@ scenarios:
       - jsonpath: "$.isSuccessful"
         expected-value: "true"
         validate: true
-      extract-jsonpath:
-        csrf:
-          jsonpath: $.csrf
 
   login-preexisting:
     # Login with a pre-existing user account.
@@ -215,8 +226,6 @@ scenarios:
           jsonpath: $.Results[0].data[0].RecordVO.recordId
         archiveNbr:
           jsonpath: $.Results[0].data[0].RecordVO.archiveNbr
-        linkId:
-          jsonpath: $.Results[0].data[0].FolderLinkVOs[0].folder_linkId
       assert-jsonpath:
       - jsonpath: "$.Results[0].message[0]"
         expected-value: "New records created"

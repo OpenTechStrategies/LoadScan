@@ -8,6 +8,7 @@ scenarios:
     - once:
       - include-scenario: get-cookies
       - include-scenario: login-preexisting
+      - include-scenario: get-account
       - include-scenario: get-root-dir
     - transaction: File upload
       force-parent-sample: false
@@ -21,6 +22,7 @@ scenarios:
       - include-scenario: get-cookies
       - include-scenario: create-account
       - include-scenario: login
+      - include-scenario: get-account
       - include-scenario: get-root-dir
     - transaction: Complete File upload
       force-parent-sample: false
