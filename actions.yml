@@ -114,11 +114,14 @@ scenarios:
         content-type: application/json
       method: POST
       label: login
-      body: '{"RequestVO":{"data":[{"AccountVO":{"primaryEmail":"${email}","rememberMe":false},"AccountPasswordVO":{"password":"${password}"}}],"apiKey":"${API_KEY}","csrf":""},"timeout":{}}'
+      body: '{"RequestVO":{"data":[{"AccountVO":{"primaryEmail":"${email}","rememberMe":false},"AccountPasswordVO":{"password":"${password}"}}],"apiKey":"${API_KEY}","csrf":null},"timeout":{}}'
       assert-jsonpath:
       - jsonpath: "$.isSuccessful"
         expected-value: "true"
         validate: true
+      extract-jsonpath:
+        csrf:
+          jsonpath: $.csrf
 
   login-preexisting:
     # Login with a pre-existing user account.
