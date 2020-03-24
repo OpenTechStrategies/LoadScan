@@ -1,7 +1,77 @@
+---
 included-configs:
 - actions.yml
 
 scenarios:
+
+  create-account-login:
+    requests:
+    - include-scenario: get-cookies
+    - include-scenario: create-account
+    - include-scenario: login
+    - include-scenario: get-account
+    - include-scenario: get-root-dir
+
+  login-fileupload-copy:
+    requests:
+    - once:
+      - include-scenario: create-account-login
+    - transaction: File Upload and Copy
+      force-parent-sample: false
+      include-timers: true
+      do:
+      - include-scenario: upload-file
+      - include-scenario: confirm-upload
+      - include-scenario: create-folder
+      - include-scenario: copy-file
+
+  login-fileupload-move:
+    requests:
+    - once:
+      - include-scenario: create-account-login
+    - transaction: File Upload and Move
+      force-parent-sample: false
+      include-timers: true
+      do:
+      - include-scenario: upload-file
+      - include-scenario: confirm-upload
+      - include-scenario: create-folder
+      - include-scenario: move-file
+
+  login-fileupload-nopoll:
+    requests:
+    - once:
+      - include-scenario: create-account-login
+    - transaction: File Upload
+      force-parent-sample: false
+      include-timers: true
+      do:
+      - include-scenario: upload-file
+
+  login-fileupload-poll:
+    requests:
+    - once:
+      - include-scenario: create-account-login
+    - transaction: Complete File Upload
+      force-parent-sample: false
+      include-timers: true
+      do:
+      - include-scenario: upload-file
+      - include-scenario: confirm-upload
+
+
+  login-fileupload-share:
+    requests:
+    - once:
+      - include-scenario: create-account-login
+    - transaction: File Upload and Share
+      force-parent-sample: false
+      include-timers: true
+      do:
+      - include-scenario: upload-file
+      - include-scenario: confirm-upload
+      - include-scenario: share-file
+      - include-scenario: check-share-link
 
   login-preexisting-fileupload:
     requests:
@@ -14,33 +84,4 @@ scenarios:
       force-parent-sample: false
       include-timers: true
       do:
-      - include-scenario: file-upload
-
-  login-fileupload-poll:
-    requests:
-    - once:
-      - include-scenario: create-account-login
-    - transaction: Complete File upload
-      force-parent-sample: false
-      include-timers: true
-      do:
-      - include-scenario: file-upload
-      - include-scenario: confirm-upload
-
-  login-fileupload-nopoll:
-    requests:
-    - once:
-      - include-scenario: create-account-login
-    - transaction: Complete File upload
-      force-parent-sample: false
-      include-timers: true
-      do:
-      - include-scenario: file-upload
-
-  create-account-login:
-    requests:
-    - include-scenario: get-cookies
-    - include-scenario: create-account
-    - include-scenario: login
-    - include-scenario: get-account
-    - include-scenario: get-root-dir
+      - include-scenario: upload-file

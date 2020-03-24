@@ -72,8 +72,8 @@ This project uses the following files and directories during execution:
 - `scenarios.yml`: user stories, constructed from actions (e.g. A user logs in, uploads a file, and waits for the file to become viewable)
 - `run.yml`: The top-level run file, which specifies the run duration, concurrency, user story/load test scenario to run, and reporting options
 - `secrets.yml`: Sensitive required fields e.g. API keys
-- `accounts.csv`: The login credentials for different user accounts
-- `files.csv`: The names of files to upload.
+- `accounts.csv`: The login credentials for various user accounts (**OPTIONAL**: only required for `login-prexisting` scenarios)
+- `files.csv`: The names of files to upload (**OPTIONAL**: only required for `fileupload` scenarios)
 
 ## Scenarios
 
@@ -82,3 +82,7 @@ Currently, the following workflows are available as scenarios for load testing.
 - `login-preexisting-fileupload`: Login with user credentials specified in `accounts.csv` and upload files repeatedly, without polling for record status. This scenario is a convenient way to upload a large number of files to a small list of specified user accounts quickly.
 - `login-fileupload-poll`: Create a new user account, login with that account, upload a file, and poll the record until processing has completed, then upload more files.
 - `create-account-login`: Create an account, login, then logout. Repeat.
+
+## Linting
+
+The yaml files are linted with [yamllint](https://github.com/adrienverge/yamllint).

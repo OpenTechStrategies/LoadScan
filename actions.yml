@@ -1,3 +1,4 @@
+---
 included-configs:
 - secrets.yml
 
@@ -19,6 +20,23 @@ scenarios:
         csrf:
           jsonpath: $.csrf
 
+  get-share-link:
+    # Try to get the share link for a file before it's created, and confirm it doesn't exist.
+    requests:
+    - url: ${APP_URL}/api/share/getLink
+      headers:
+        content-type: application/json
+      method: POST
+      label: get-share-link
+      body: '{"RequestVO":{"data":[{"RecordVO":{"folder_linkId":${linkId}}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+      assert-jsonpath:
+      - jsonpath: "$.Results[0].message[0]"
+        expected-value: "Link does not exist"
+        validate: true
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
+        validate: true
+
   get-account:
     # Get csrf for subsequent requests.
     requests:
@@ -37,8 +55,8 @@ scenarios:
     # Create a perfbot user account.
     requests:
     - set-variables:
-       email: perfbot+taurus${__RandomString(8,1234567890)}@opentechstrategies.com
-       password: ${__RandomString(12, abcdegfhijklmnopqrstuvwxyz1234567890)}
+        email: perfbot+taurus${__RandomString(8,1234567890)}@opentechstrategies.com
+        password: ${__RandomString(12, abcdegfhijklmnopqrstuvwxyz1234567890)}
     - url: ${APP_URL}/api/account/post
       headers:
         content-type: application/json
@@ -58,13 +76,13 @@ scenarios:
         content-type: application/json
       method: POST
       label: create-folder
-      body: '{"RequestVO":{"data":[{"FolderVO":{"displayName":"BlazemeterLoadTestFolder","parentFolderId":${folderId},"parentFolder_linkId":${linkId}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+      body: '{"RequestVO":{"data":[{"FolderVO":{"displayName":"BlazemeterLoadTestFolder","parentFolderId":${parentFolderId},"parentFolder_linkId":${parentFolder_linkId}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
       assert-jsonpath:
-      - jsonpath: "$.isSuccessful"
-        expected-value: "true"
-        validate: true
       - jsonpath: "$.Results[0].data[0].FolderVO.status"
         expected-value: "status.generic.ok"
+        validate: true
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
         validate: true
       extract-jsonpath:
         newFolderId:
@@ -80,11 +98,11 @@ scenarios:
       label: create-tag
       body: '{"RequestVO":{"data":[{"TagVO":{"name":"MyBlazemeterTag"}, "TagLinkVO":{"refTable":"record","refId":68}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
       assert-jsonpath:
-      - jsonpath: "$.isSuccessful"
-        expected-value: "true"
-        validate: true
       - jsonpath: "$.Results[0].data[0].TagLinkVO.status"
         expected-value: "status.generic.ok"
+        validate: true
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
         validate: true
       extract-jsonpath:
         tagId:
@@ -129,7 +147,7 @@ scenarios:
     - path: accounts.csv
       variable-names: email,password
     requests:
-      - include-scenario: login
+    - include-scenario: login
 
   get-record:
     # Get record info.
@@ -159,9 +177,9 @@ scenarios:
         expected-value: "true"
         validate: true
       extract-jsonpath:
-        folderId:
+        parentFolderId:
           jsonpath: $.Results[0].data[0].FolderVO.ChildItemVOs[1].folderId
-        linkId:
+        parentFolder_linkId:
           jsonpath: $.Results[0].data[0].FolderVO.ChildItemVOs[1].FolderLinkVOs[0].folder_linkId
 
   get-tree:
@@ -172,47 +190,68 @@ scenarios:
         content-type: application/json
       method: POST
       label: get-tree
-      body: '{"RequestVO":{"data":[{"FolderVO":{"archiveNbr":"${acrhiveNbr}","folder_linkId":${linkId},"folderId":${folderId}}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+      body: '{"RequestVO":{"data":[{"FolderVO":{"archiveNbr":"${acrhiveNbr}","folder_linkId":${parentFolder_linkId},"folderId":${parentFolderId}}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
       assert-jsonpath:
       - jsonpath: "$.isSuccessful"
         expected-value: "true"
         validate: true
 
-  file-copy:
+  copy-file:
     # Copy a file to a new folder.
     requests:
     - url: ${APP_URL}/api/record/copy
       headers:
         content-type: application/json
       method: POST
-      label: file-copy
+      label: copy-file
       body: '{"RequestVO":{"data":[{"RecordVO":${record},FolderDestVO:${destFolder}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
       assert-jsonpath:
-      - jsonpath: "$.isSuccessful"
-        expected-value: "true"
-        validate: true
       - jsonpath: "$.Results[0].message[0]"
         expected-value: "Record copied"
         validate: true
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
+        validate: true
 
-  file-move:
+  move-file:
     # Move a file to a new folder.
     requests:
     - url: ${APP_URL}/api/record/move
       headers:
         content-type: application/json
       method: POST
-      label: file-move
+      label: move-file
       body: '{"RequestVO":{"data":[{"RecordVO":${record},FolderDestVO:${destFolder}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
       assert-jsonpath:
-      - jsonpath: "$.isSuccessful"
-        expected-value: "true"
-        validate: true
       - jsonpath: "$.Results[0].message[0]"
         expected-value: "Record moved to another folder"
         validate: true
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
+        validate: true
 
-  file-upload:
+  share-file:
+    # Generate a share link for a file.
+    requests:
+    - include-scenario: get-share-link
+    - url: ${APP_URL}/api/share/generatesharelink
+      headers:
+        content-type: application/json
+      method: POST
+      label: share-file
+      body: '{"RequestVO":{"data":[{"RecordVO":{"folder_linkId":${linkId}}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+      assert-jsonpath:
+      - jsonpath: "$.Results[0].message[0]"
+        expected-value: "Link generated"
+        validate: true
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
+        validate: true
+      extract-jsonpath:
+        shareUrlToken:
+          jsonpath: $.Results[0].data[0].Shareby_urlVO.urlToken
+
+  upload-file:
     # Perform the file upload requests.
     keepalive: false
     data-sources:
@@ -223,12 +262,14 @@ scenarios:
         content-type: application/json
       method: POST
       label: postmetabatch-request
-      body: '{"RequestVO":{"data":[{"RecordVO":{"parentFolderId":${folderId},"parentFolder_linkId":${linkId},"displayName":"${filename}","description":"","displayDT":"","displayEndDT":"","uploadFileName":"${filename}","thumbnail":"","LocnVO":{"locnId":null,"latitude":null,"longitude":null,"place":null,"placeVerified":null,"status":null,"type":null,"createdDT":null,"updatedDT":null},"derivedTimezoneId":null}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":300000}'
+      body: '{"RequestVO":{"data":[{"RecordVO":{"parentFolderId":${parentFolderId},"parentFolder_linkId":${parentFolder_linkId},"displayName":"${filename}","description":"","displayDT":"","displayEndDT":"","uploadFileName":"${filename}","thumbnail":"","LocnVO":{"locnId":null,"latitude":null,"longitude":null,"place":null,"placeVerified":null,"status":null,"type":null,"createdDT":null,"updatedDT":null},"derivedTimezoneId":null}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":300000}'
       extract-jsonpath:
         recordId:
           jsonpath: $.Results[0].data[0].RecordVO.recordId
         archiveNbr:
           jsonpath: $.Results[0].data[0].RecordVO.archiveNbr
+        linkId:
+          jsonpath: $.Results[0].data[0].RecordVO.folder_linkId
       assert-jsonpath:
       - jsonpath: "$.Results[0].message[0]"
         expected-value: "New records created"
@@ -248,7 +289,7 @@ scenarios:
         recordid: ${recordId}
 
   confirm-upload:
-    # Poll /api/record/getLean at 1-second intervals to determine when the upload is complete.
+    # Poll /api/record/getLean at 2-second intervals to determine when the upload is complete.
     # Possible upload statuses:
     # - status.record.processing
     # - status.record.needs_converting
@@ -257,8 +298,8 @@ scenarios:
     requests:
     # https://jmeter.apache.org/usermanual/component_reference.html#Transaction_Controller
     - transaction: Record processing
-      force-parent-sample: true # we don't need the reporting granuality of each request
-      include-timers: true # include pause interval in response time
+      force-parent-sample: true  # we don't need the reporting granuality of each request
+      include-timers: true  # include pause interval in response time
       do:
       - while: '${__groovy(vars.get("uploadStatus") != "status.generic.ok" )}'
         do:
@@ -269,18 +310,33 @@ scenarios:
           label: getLean
           body: '{"RequestVO":{"data":[{"RecordVO":{"archiveNbr":"${archiveNbr}"}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
           assert-jsonpath:
-            - jsonpath: "$.isSuccessful"
-              expected-value: "true"
-              validate: true
-            - jsonpath: "$.Results[0].data[0].RecordVO.recordId"
-              expected-value: "${recordId}"
-              validate: true
+          - jsonpath: "$.Results[0].data[0].RecordVO.recordId"
+            expected-value: "${recordId}"
+            validate: true
+          - jsonpath: "$.isSuccessful"
+            expected-value: "true"
+            validate: true
           extract-jsonpath:
             uploadStatus:
               jsonpath: "$.Results[0].data[0].RecordVO.status"
         - action: pause
           target: current-thread
-          pause-duration: 1s
+          pause-duration: 2s
     # Reset uploadStatus for subsequent samplers.
     - set-variables:
-       uploadStatus: null
+        uploadStatus: null
+
+  check-share-link:
+    # Confirm that a share link is able to be visited.
+    requests:
+    - url: ${APP_URL}/api/share/checkShareLink
+      method: post
+      label: check-share-link
+      body: '{"RequestVO":{"data":[{"Shareby_urlVO":{"urlToken":"${shareUrlToken}"}}],"apiKey":"${API_KEY}","csrf":null},"timeout":{}}'
+      assert-jsonpath:
+      - jsonpath: "$.Results[0].data[0].Shareby_urlVO.status"
+        expected-value: "status.generic.ok"
+        validate: true
+      - jsonpath: "$.isSuccessful"
+        expected-value: "true"
+        validate: true
