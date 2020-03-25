@@ -161,6 +161,12 @@ scenarios:
       label: get-record
       body: '{"RequestVO":{"data":[{"RecordVO":{"archiveNbr":"${archiveNbr}","folder_linkId":${linkId},"recordId":${recordId}}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
       assert-jsonpath:
+      - jsonpath: "$.Results[0].message"
+        expected-value: "RecordId ${recordId} has been retrieved."
+        validate: true
+      - jsonpath: "$.Results[0].status"
+        expected-value: "true"
+        validate: true
       - jsonpath: "$.isSuccessful"
         expected-value: "true"
         validate: true
@@ -175,7 +181,7 @@ scenarios:
       headers:
         content-type: application/json
       method: POST
-      label: getroot
+      label: get-root
       body: '{"RequestVO":{"data":[{}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
       assert-jsonpath:
       - jsonpath: "$.isSuccessful"
