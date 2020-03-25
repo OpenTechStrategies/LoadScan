@@ -159,7 +159,7 @@ scenarios:
         content-type: application/json
       method: POST
       label: get-record
-      body: '{"RequestVO":{"data":[{"RecordVO":{"archiveNbr":"${acrhiveNbr}","folder_linkId":${linkId},"recordId":${recordId}}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+      body: '{"RequestVO":{"data":[{"RecordVO":{"archiveNbr":"${archiveNbr}","folder_linkId":${linkId},"recordId":${recordId}}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
       assert-jsonpath:
       - jsonpath: "$.isSuccessful"
         expected-value: "true"
@@ -195,7 +195,7 @@ scenarios:
         content-type: application/json
       method: POST
       label: get-tree
-      body: '{"RequestVO":{"data":[{"FolderVO":{"archiveNbr":"${acrhiveNbr}","folder_linkId":${parentFolder_linkId},"folderId":${parentFolderId}}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+      body: '{"RequestVO":{"data":[{"FolderVO":{"archiveNbr":"${archiveNbr}","folder_linkId":${parentFolder_linkId},"folderId":${parentFolderId}}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
       assert-jsonpath:
       - jsonpath: "$.isSuccessful"
         expected-value: "true"
