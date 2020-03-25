@@ -59,7 +59,6 @@ scenarios:
       - include-scenario: upload-file
       - include-scenario: confirm-upload
 
-
   login-fileupload-share:
     requests:
     - once:
@@ -85,3 +84,20 @@ scenarios:
       include-timers: true
       do:
       - include-scenario: upload-file
+
+  baseline:
+    requests:
+    - once:
+      - include-scenario: create-account-login
+    - transaction: File Upload and Share
+      force-parent-sample: false
+      include-timers: true
+      do:
+      - include-scenario: upload-file
+      - include-scenario: confirm-upload
+      - include-scenario: share-file
+      - include-scenario: check-share-link
+      - include-scenario: create-folder
+      - include-scenario: copy-file
+      - include-scenario: create-folder
+      - include-scenario: move-file

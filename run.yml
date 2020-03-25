@@ -6,4 +6,4 @@ execution:
 - concurrency: 5
   ramp-up: 1m
   hold-for: 5m
-  scenario: login-fileupload-share
+  scenario: login-fileupload-poll

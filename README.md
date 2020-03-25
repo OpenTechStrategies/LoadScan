@@ -79,10 +79,18 @@ This project uses the following files and directories during execution:
 
 Currently, the following workflows are available as scenarios for load testing.
 
-- `login-preexisting-fileupload`: Login with user credentials specified in `accounts.csv` and upload files repeatedly, without polling for record status. This scenario is a convenient way to upload a large number of files to a small list of specified user accounts quickly.
-- `login-fileupload-poll`: Create a new user account, login with that account, upload a file, and poll the record until processing has completed, then upload more files.
-- `create-account-login`: Create an account, login, then logout. Repeat.
+| Scenario | Description |
+| -------- | ----------- |
+| `create-account-login` | Create an account, login, then logout. Repeat. |
+| `login-preexisting-fileupload` | Login with user credentials specified in `accounts.csv` and upload files repeatedly, without polling for record status. This scenario is a convenient way to upload a large number of files to a small list of specified user accounts quickly. |
+| `login-fileupload-poll` | Create a new user account, login with that account, upload a file, and poll the record until processing has completed, then upload more files. |
+| `login-fileupload-copy` | Same as `login-fileupload-poll`, but then create a folder and copy the uploaded file into the new folder. Repeat. |
+| `login-fileupload-move` | Same as `login-fileupload-poll`, but then create a folder and move the uploaded file into the new folder. Repeat. |
+| `login-fileupload-share` | Same as `login-fileupload-poll`, but then create a shared link for the file and visit that link. Repeat. |
+| `baseline` | A combination of all of the above scenarios. |
 
 ## Linting
 
 The yaml files are linted with [yamllint](https://github.com/adrienverge/yamllint).
+
+    yamllint .
