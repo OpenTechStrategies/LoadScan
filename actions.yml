@@ -71,12 +71,14 @@ scenarios:
   create-folder:
     # Create a folder in "My Files".
     requests:
+    - set-variables:
+        folderName: LoadTestFolder${__RandomString(8,1234567890)}
     - url: ${APP_URL}/api/folder/post
       headers:
         content-type: application/json
       method: POST
       label: create-folder
-      body: '{"RequestVO":{"data":[{"FolderVO":{"displayName":"BlazemeterLoadTestFolder","parentFolderId":${parentFolderId},"parentFolder_linkId":${parentFolder_linkId}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+      body: '{"RequestVO":{"data":[{"FolderVO":{"displayName":"${folderName}","parentFolderId":${parentFolderId},"parentFolder_linkId":${parentFolder_linkId}}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
       assert-jsonpath:
       - jsonpath: "$.Results[0].data[0].FolderVO.status"
         expected-value: "status.generic.ok"
@@ -85,8 +87,8 @@ scenarios:
         expected-value: "true"
         validate: true
       extract-jsonpath:
-        newFolderId:
-          jsonpath: $.Results[0].data[0].FolderVO.folderId
+        destFolder:
+          jsonpath: $.Results[0].data[0].FolderVO
 
   create-tag:
     # Create a tag
@@ -162,6 +164,9 @@ scenarios:
       - jsonpath: "$.isSuccessful"
         expected-value: "true"
         validate: true
+      extract-jsonpath:
+        record:
+          jsonpath: $.Results[0].data[0].RecordVO
 
   get-root-dir:
     # Get the directory info for the "My Files" folder.
@@ -199,12 +204,13 @@ scenarios:
   copy-file:
     # Copy a file to a new folder.
     requests:
+    - include-scenario: get-record
     - url: ${APP_URL}/api/record/copy
       headers:
         content-type: application/json
       method: POST
       label: copy-file
-      body: '{"RequestVO":{"data":[{"RecordVO":${record},FolderDestVO:${destFolder}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+      body: '{"RequestVO":{"data":[{"RecordVO":${record},"FolderDestVO":${destFolder}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
       assert-jsonpath:
       - jsonpath: "$.Results[0].message[0]"
         expected-value: "Record copied"
@@ -216,12 +222,13 @@ scenarios:
   move-file:
     # Move a file to a new folder.
     requests:
+    - include-scenario: get-record
     - url: ${APP_URL}/api/record/move
       headers:
         content-type: application/json
       method: POST
       label: move-file
-      body: '{"RequestVO":{"data":[{"RecordVO":${record},FolderDestVO:${destFolder}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+      body: '{"RequestVO":{"data":[{"RecordVO":${record},"FolderDestVO":${destFolder}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
       assert-jsonpath:
       - jsonpath: "$.Results[0].message[0]"
         expected-value: "Record moved to another folder"
