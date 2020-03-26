@@ -151,29 +151,6 @@ scenarios:
     requests:
     - include-scenario: login
 
-  get-record:
-    # Get record info.
-    requests:
-    - url: ${APP_URL}/api/record/get
-      headers:
-        content-type: application/json
-      method: POST
-      label: get-record
-      body: '{"RequestVO":{"data":[{"RecordVO":{"archiveNbr":"${archiveNbr}","folder_linkId":${linkId},"recordId":${recordId}}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
-      assert-jsonpath:
-      - jsonpath: "$.Results[0].message"
-        expected-value: "RecordId ${recordId} has been retrieved."
-        validate: true
-      - jsonpath: "$.Results[0].status"
-        expected-value: "true"
-        validate: true
-      - jsonpath: "$.isSuccessful"
-        expected-value: "true"
-        validate: true
-      extract-jsonpath:
-        record:
-          jsonpath: $.Results[0].data[0].RecordVO
-
   get-root-dir:
     # Get the directory info for the "My Files" folder.
     requests:
@@ -210,7 +187,6 @@ scenarios:
   copy-file:
     # Copy a file to a new folder.
     requests:
-    - include-scenario: get-record
     - url: ${APP_URL}/api/record/copy
       headers:
         content-type: application/json
@@ -228,7 +204,6 @@ scenarios:
   move-file:
     # Move a file to a new folder.
     requests:
-    - include-scenario: get-record
     - url: ${APP_URL}/api/record/move
       headers:
         content-type: application/json
@@ -302,7 +277,7 @@ scenarios:
         recordid: ${recordId}
 
   confirm-upload:
-    # Poll /api/record/getLean at 2-second intervals to determine when the upload is complete.
+    # Poll /api/record/get at 2-second intervals to determine when the upload is complete.
     # Possible upload statuses:
     # - status.record.processing
     # - status.record.needs_converting
@@ -311,27 +286,32 @@ scenarios:
     requests:
     # https://jmeter.apache.org/usermanual/component_reference.html#Transaction_Controller
     - transaction: Record processing
-      force-parent-sample: true  # we don't need the reporting granuality of each request
+      force-parent-sample: false # getting metrics on each request would be helpful
       include-timers: true  # include pause interval in response time
       do:
       - while: '${__groovy(vars.get("uploadStatus") != "status.generic.ok" )}'
         do:
-        - url: ${APP_URL}/api/record/getLean
+        - url: ${APP_URL}/api/record/get
           headers:
             content-type: application/json
           method: POST
-          label: getLean
-          body: '{"RequestVO":{"data":[{"RecordVO":{"archiveNbr":"${archiveNbr}"}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
+          label: get-record
+          body: '{"RequestVO":{"data":[{"RecordVO":{"archiveNbr":"${archiveNbr}","folder_linkId":${linkId},"recordId":${recordId}}}],"apiKey":"${API_KEY}","csrf":"${csrf}"},"timeout":{}}'
           assert-jsonpath:
-          - jsonpath: "$.Results[0].data[0].RecordVO.recordId"
-            expected-value: "${recordId}"
+          - jsonpath: "$.Results[0].message"
+            expected-value: "RecordId ${recordId} has been retrieved."
+            validate: true
+          - jsonpath: "$.Results[0].status"
+            expected-value: "true"
             validate: true
           - jsonpath: "$.isSuccessful"
             expected-value: "true"
             validate: true
           extract-jsonpath:
             uploadStatus:
-              jsonpath: "$.Results[0].data[0].RecordVO.status"
+              jsonpath: $.Results[0].data[0].RecordVO.status
+            record:
+              jsonpath: $.Results[0].data[0].RecordVO
         - action: pause
           target: current-thread
           pause-duration: 2s
